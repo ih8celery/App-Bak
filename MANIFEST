@@ -1,0 +1,6 @@
+README.md           introduce App::Util::Bak
+MANIFEST            list the main project files
+Build.PL            initialize the build of App::Util::Bak
+META.yml            present project abstract
+lib/App/Util/Bak.pm define command-line interface of project
+lib/Util/Bak.pm     define App::Util::Bak's backend
