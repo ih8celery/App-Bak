@@ -36,34 +36,48 @@ sub get_subcommand {
   # with no args, just print help
   help() unless @ARGV;
 
+  my $gs_first = shift @ARGV;
+
   # otherwise test for global option or subcommand
-  if ($ARGV[0] eq '-h' || $ARGV[0] eq '--help') {
+  if ($gs_first eq '-h' || $gs_first eq '--help') {
     help();
   }
-  elsif ($ARGV[0] eq '-v' || $ARGV[0] eq '--version') {
+  elsif ($gs_first eq '-v' || $gs_first eq '--version') {
     version();
   }
-  elsif ($ARGV[0] eq 'add') {
+  elsif ($gs_first eq 'add') {
     return 'add';
   }
-  elsif ($ARGV[0] eq 'rm') {
+  elsif ($gs_first eq 'rm') {
     return 'rm';
   }
-  elsif ($ARGV[0] eq 'ls') {
+  elsif ($gs_first eq 'ls') {
     return 'ls';
   }
-  elsif ($ARGV[0] eq 'edit') {
+  elsif ($gs_first eq 'edit') {
     return 'edit';
   }
-  elsif ($ARGV[0] eq 'up') {
+  elsif ($gs_first eq 'up') {
     return 'up';
   }
-  elsif ($ARGV[0] eq 'down') {
+  elsif ($gs_first eq 'down') {
     return 'down';
   }
   else {
-    die "error: $ARGV[0] is not a subcommand";
+    die "error: $gs_first is not a subcommand";
   }
+}
+
+# process arguments: this produces a "place" and a list of other args.
+# the place points to a directory or YAML file and, in case of the latter,
+# the relevant data within the YAML file
+sub process_args {
+  my $pa_first = shift @ARGV || die "error: process_args: no args found";
+
+  # split into registry filename and the "rest" of key and drop them
+  # with the rest of the command line arguments
+  my @pa_path_parts = split /\./, $pa_first;
+  return (shift(@pa_path_parts), [ @pa_path_parts ] , @ARGV);
 }
 
 # main application logic
@@ -97,35 +111,35 @@ sub Run {
   exit 1 unless GetOptions(%r_opts);
 
   # process arguments
-  my ($r_arg_place, @r_arg_rest) = process_args();
+  my ($r_file, $r_place, @r_rest) = process_args();
 
   # create an Util::Bak object
-  my $bak = Util::Bak->new($r_conf);
+  my $bak = Util::Bak->new($r_file, $r_conf);
 
   # decide between operations on archive
   ## collect archive files
   if ($r_command eq 'up') {
-    $bak->Up($r_arg_place);
+    $bak->Up($r_place);
   }
 
-  ## distribute archive files
+  ## disseminate archive files
   elsif ($r_command eq 'down') {
-    $bak->Down($r_arg_place);
+    $bak->Down($r_place);
   }
 
   ## add to archive or create a new archive
-  elsif ($r_command eq 'new' && !@r_arg_rest) {
-    $bak->Add($r_arg_place, @r_arg_rest);
+  elsif ($r_command eq 'add') {
+    $bak->Add($r_place, @r_rest);
   }
 
   ## remove archive or from archive
   elsif ($r_command eq 'rm') {
-    $bak->Remove($r_arg_place, @r_arg_rest);
+    $bak->Remove($r_place, @r_rest);
   }
 
   ## show information about archive
   else {
-    $bak->Show($r_arg_place);
+    $bak->Show($r_place);
   }
 }
 
