@@ -7,31 +7,43 @@ use warnings;
 
 use feature qw/say/;
 
-use YAML::XS;
-use File::Spec::Functions;
+use YAML::XS qw/LoadFile/;
 
 sub new {
-  my ($n_class, $n_defaults) = @_;
+  my ($n_class, $n_ar_path, $n_defaults) = @_;
 
-  my $n_config = {
+  my $n_config  = {
+    ARCHIVE     => $n_ar_path,
+    SPEC        => LoadFile($n_ar_path),
     VERBOSE     => $n_defaults->{VERBOSE} || 0,
     UP_FILE     => $n_defaults->{UP_FILE},
     DOWN_FILE   => $n_defaults->{DOWN_FILE},
     UP_METHOD   => $n_defaults->{UP_METHOD},
     DOWN_METHOD => $n_defaults->{DOWN_METHOD},
     REGISTRY    => $n_defaults->{REGISTRY},
-    ARCHIVE     => $n_defaults->{ARCHIVE},
   };
 
   bless $n_config, $n_class; 
 }
 
-sub Add {}
+sub Add {
+  1;
+}
 
-sub Remove {}
+sub Remove {
+  1;
+}
 
-sub Show {}
+sub Show {
+  1;
+}
 
-sub Down {}
+sub Down {
+  1;
+}
 
-sub Up {}
+sub Up {
+  1;
+}
+
+1;
