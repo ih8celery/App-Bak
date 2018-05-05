@@ -31,9 +31,39 @@ sub version {
   say "bak $VERSION";
 }
 
-# process arguments
+# process subcommand
 sub get_subcommand {
+  # with no args, just print help
+  help() unless @ARGV;
 
+  # otherwise test for global option or subcommand
+  if ($ARGV[0] eq '-h' || $ARGV[0] eq '--help') {
+    help();
+  }
+  elsif ($ARGV[0] eq '-v' || $ARGV[0] eq '--version') {
+    version();
+  }
+  elsif ($ARGV[0] eq 'add') {
+    return 'add';
+  }
+  elsif ($ARGV[0] eq 'rm') {
+    return 'rm';
+  }
+  elsif ($ARGV[0] eq 'ls') {
+    return 'ls';
+  }
+  elsif ($ARGV[0] eq 'edit') {
+    return 'edit';
+  }
+  elsif ($ARGV[0] eq 'up') {
+    return 'up';
+  }
+  elsif ($ARGV[0] eq 'down') {
+    return 'down';
+  }
+  else {
+    die "error: $ARGV[0] is not a subcommand";
+  }
 }
 
 # main application logic
