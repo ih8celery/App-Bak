@@ -75,12 +75,12 @@ sub Run {
   # decide between operations on archive
   ## collect archive files
   if ($r_command eq 'up') {
-    $bak->Archive_Up($r_arg_place);
+    $bak->Up($r_arg_place);
   }
 
   ## distribute archive files
   elsif ($r_command eq 'down') {
-    $bak->Archive_Down($r_arg_place);
+    $bak->Down($r_arg_place);
   }
 
   ## add to archive or create a new archive
@@ -95,7 +95,7 @@ sub Run {
 
   ## show information about archive
   else {
-    $bak->Show_Archive($r_arg_place);
+    $bak->Show($r_arg_place);
   }
 }
 
