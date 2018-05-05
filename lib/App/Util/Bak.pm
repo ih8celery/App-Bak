@@ -63,6 +63,9 @@ sub get_subcommand {
   elsif ($gs_first eq 'down') {
     return 'down';
   }
+  elsif ($gs_first eq 'look') {
+    return 'look';
+  }
   else {
     die "error: $gs_first is not a subcommand";
   }
@@ -116,12 +119,14 @@ sub Run {
     DOWN_METHOD => 'COPY',
     REGISTRY    => '',
     ARCHIVE     => '',
+    EDITOR      => ($ENV{EDITOR} || 'vim'),
   };
 
   my %r_opts = (
     '-h|--help'          => \&help,
     '-v|--version'       => \&version,
     '-V|--verbose'       => sub { $r_conf->{VERBOSE} = 1; },
+    '-e|--editor=s'      => \$r_conf->{EDITOR},
     '-f|--up-file=s'     => \$r_conf->{UP_FILE},
     '-F|--down-file=s'   => \$r_conf->{DOWN_FILE},
     '-m|--up-method=s'   => \$r_conf->{UP_METHOD},
@@ -161,6 +166,16 @@ sub Run {
   ## remove archive or from archive
   elsif ($r_command eq 'rm') {
     $bak->Remove($r_place, @r_rest);
+  }
+
+  ## edit an existing archive spec
+  elsif ($r_command eq 'edit') {
+    $bak->Edit_Spec($r_place);
+  }
+
+  ## open the archive proper
+  elsif ($r_command eq 'look') {
+    $bak->Edit_Archive($r_place);
   }
 
   ## show information about archive
