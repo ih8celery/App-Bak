@@ -12,6 +12,7 @@ requires:
   Getopt::Long: '>2.2'
   Cwd: '0'
   YAML::XS: '0'
+  File::Spec::Functions: '0'
 test_requires:
   File::Temp: '0'
   Test::More: '0'

@@ -9,9 +9,10 @@ my $build = Module::Build->new(
   module_name    => 'App::Util::Bak',
   license        => 'MIT',
   requires       => {
-    'Getopt::Long' => '>2.2',
-    'Cwd'          => '0',
-    'YAML::XS'     => '0',
+    'Getopt::Long'          => '>2.2',
+    'Cwd'                   => '0',
+    'YAML::XS'              => '0',
+    'File::Spec::Functions' => '0',
   },
   dist_version   => '0.001000',
   dist_abstract  => 'META.yml'
