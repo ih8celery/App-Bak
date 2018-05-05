@@ -5,14 +5,98 @@ package App::Util::Bak;
 use strict;
 use warnings;
 
+use feature qw/say/;
+
 use Util::Bak;
 
 use Getopt::Long;
 
 our $VERSION = '0.001000';
 
+sub help {
+  say <<EOM;
+  '-h|--help'          print this help message
+  '-v|--version'       print bak's current version
+  '-V|--verbose'       print messages verbosely
+  '-f|--up-file=s'     set the file used as the source for up
+  '-F|--down-file=s'   set the file used as destination of down
+  '-m|--up-method=s'   set the method used by up to transfer files
+  '-M|--down-method=s' set the method used by down to transfer files
+  '-r|--registry=s'    use a particular YAML file as spec for archive
+  '-a|--archive=s'     use a particular file or directory as archive
+EOM
+}
+
+sub version {
+  say "bak $VERSION";
+}
+
+# process arguments
+sub get_subcommand {
+
+}
+
+# main application logic
 sub Run {
-  1;
+  my $r_conf = {
+    VERBOSE     => 0,
+    UP_FILE     => '',
+    DOWN_FILE   => '',
+    UP_METHOD   => 'COPY',
+    DOWN_METHOD => 'COPY',
+    REGISTRY    => '',
+    ARCHIVE     => '',
+  };
+
+  my %r_opts = (
+    '-h|--help'          => \&help,
+    '-v|--version'       => \&version,
+    '-V|--verbose'       => sub { $r_conf->{VERBOSE} = 1; },
+    '-f|--up-file=s'     => \$r_conf->{UP_FILE},
+    '-F|--down-file=s'   => \$r_conf->{DOWN_FILE},
+    '-m|--up-method=s'   => \$r_conf->{UP_METHOD},
+    '-M|--down-method=s' => \$r_conf->{DOWN_METHOD},
+    '-r|--registry=s'    => \$r_conf->{REGISTRY},
+    '-a|--archive=s'     => \$r_conf->{ARCHIVE},
+  );
+
+  # get subcommand
+  my $r_command = get_subcommand();
+
+  # get options
+  exit 1 unless GetOptions(%r_opts);
+
+  # process arguments
+  my ($r_arg_place, @r_arg_rest) = process_args();
+
+  # create an Util::Bak object
+  my $bak = Util::Bak->new($r_conf);
+
+  # decide between operations on archive
+  ## collect archive files
+  if ($r_command eq 'up') {
+    $bak->Archive_Up($r_arg_place);
+  }
+
+  ## distribute archive files
+  elsif ($r_command eq 'down') {
+    $bak->Archive_Down($r_arg_place);
+  }
+
+  ## add to archive or create a new archive
+  elsif ($r_command eq 'new' && !@r_arg_rest) {
+    $bak->Add($r_arg_place, @r_arg_rest);
+  }
+
+  ## remove archive or from archive
+  elsif ($r_command eq 'rm') {
+    $bak->Remove($r_arg_place, @r_arg_rest);
+  }
+
+  ## show information about archive
+  else {
+    $bak->Show_Archive($r_arg_place);
+  }
 }
 
 1;
