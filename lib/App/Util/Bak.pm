@@ -80,6 +80,32 @@ sub process_args {
   return (shift(@pa_path_parts), [ @pa_path_parts ] , @ARGV);
 }
 
+sub get_archive_path {
+  my ($gap_registry, $gap_ar_name) = @_;
+  my $gap_location = '';
+
+  # read each line of file, looking for archive name
+  open my $gap_fh, '<', $gap_registry;
+
+  while ((my $gap_line = <$gap_fh>)) {
+    my @gap_fields = split /:\s+/, $gap_line;
+
+    if ($gap_fields[0] eq $gap_ar_name) {
+      $gap_location = $gap_fields[1];
+      last;
+    }
+  }
+
+  close $gap_fh;
+
+  if (-e $gap_location) {
+    return $gap_location;
+  }
+  else {
+    die "error: could not find an archive (using \'$gap_location\')";
+  }
+}
+
 # main application logic
 sub Run {
   my $r_conf = {
@@ -114,7 +140,7 @@ sub Run {
   my ($r_file, $r_place, @r_rest) = process_args();
 
   # create an Util::Bak object
-  my $bak = Util::Bak->new($r_file, $r_conf);
+  my $bak = Util::Bak->new(get_archive_path($r_file), $r_conf);
 
   # decide between operations on archive
   ## collect archive files
