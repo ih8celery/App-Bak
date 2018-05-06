@@ -165,12 +165,12 @@ sub Run {
   ## this introduces files recently added to the spec
   ## removes files not found in the spec
   if ($r_command eq 'up') {
-    $bak->Up($r_place);
+    $bak->Up(@$r_place);
   }
 
   ## disseminate archive files to their "down" locations
   elsif ($r_command eq 'down') {
-    $bak->Down($r_place);
+    $bak->Down(@$r_place);
   }
 
   ## add files to archive spec

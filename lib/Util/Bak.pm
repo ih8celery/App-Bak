@@ -8,6 +8,8 @@ use warnings;
 use feature qw/say/;
 
 use YAML::XS qw/LoadFile DumpFile/;
+use File::Spec::Functions qw/catfile/;
+use File::Copy;
 
 sub new {
   my ($n_class, $n_ar_path, $n_defaults) = @_;
@@ -70,6 +72,91 @@ sub editor {
 
 sub save_spec {
   DumpFile($_[0]->{SPEC_FILE}, $_[0]->{SPEC_YAML});
+}
+
+sub down_file {
+  my ($self, $k) = @_;
+
+  if (exists $self->{DOWN_FILE} && $self->{DOWN_FILE} ne '') {
+    return $self->{DOWN_FILE};
+  }
+
+  my $down_file;
+  if (exists $self->{SPEC_YAML}{files}{$k}{down_file}) {
+    $down_file = $self->{SPEC_YAML}{files}{$k}{down_file};
+  }
+  else {
+    $down_file = $self->{SPEC_YAML}{files}{$k}{up_file};
+  }
+
+  if (exists $self->{SPEC_YAML}{files}{_root}) {
+    $down_file = catfile($self->{SPEC_YAML}{files}{_root}, $down_file);
+  }
+
+  return $down_file;
+}
+
+sub up_file {
+  my ($self, $k) = @_;
+
+  if (exists $self->{UP_FILE} && $self->{UP_FILE} ne '') {
+    return $self->{UP_FILE};
+  }
+
+  my $up_file;
+  if (exists $self->{SPEC_YAML}{files}{$k}{up_file}) {
+    $up_file = $self->{SPEC_YAML}{files}{$k}{up_file};
+  }
+  else {
+    die 'malformed spec error: up_file: no up file defined for file';
+  }
+
+  if (exists $self->{SPEC_YAML}{files}{_root}) {
+    $up_file = catfile($self->{SPEC_YAML}{files}{_root}, $up_file);
+  }
+
+  return $up_file;
+}
+
+sub down_method {
+  my ($self, $k) = @_;
+
+  if (exists $self->{DOWN_METHOD} && $self->{DOWN_METHOD} ne '') {
+    return $self->{DOWN_METHOD};
+  }
+
+  if (exists $self->{SPEC_YAML}{files}{$k}{down_method}) {
+    return $self->{SPEC_YAML}{files}{$k}{down_method};
+  }
+  else {
+    return 'COPY';
+  }
+}
+
+sub up_method {
+  my ($self, $k) = @_;
+
+  if (exists $self->{UP_METHOD} && $self->{UP_METHOD} ne '') {
+    return $self->{UP_METHOD};
+  }
+
+  if (exists $self->{SPEC_YAML}{files}{$k}{up_method}) {
+    return $self->{SPEC_YAML}{files}{$k}{up_method};
+  }
+  else {
+    return 'COPY';
+  }
+}
+
+sub _transfer_file {
+  my ($method, $src, $dest) = @_;
+
+  if ($method eq 'COPY') {
+    copy($src, $dest);
+  }
+  else {
+    die "error: transfer_file: $method is not a valid method";
+  }
 }
 
 sub Add {
@@ -137,7 +224,6 @@ sub Remove {
   $self->save_spec();
 }
 
-# return a string representation of the files in an archive's spec
 sub Describe {
   my ($self) = @_;
 
@@ -162,11 +248,26 @@ sub Describe {
 }
 
 sub Down {
-  1;
+  my ($self, @places) = @_;
+
+  for my $place (@places) {
+    if (exists $self->{SPEC_YAML}{files}{$place}) {
+      my $src    = catfile($self->{ARCHIVE}, $place);
+      my $dest   = $self->down_file($place);
+      my $method = $self->down_method($place);
+
+      _transfer_file($method, $src, $dest);
+    }
+  }
 }
 
 sub Up {
-  1;
+  my ($self, @places) = @_;
+
+  # foreach $place, copy {up_file} into $place within {archive}
+  for my $place (@places) {
+  
+  }
 }
 
 1;
