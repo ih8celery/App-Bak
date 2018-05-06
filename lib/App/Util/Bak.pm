@@ -184,12 +184,12 @@ sub Run {
 
   ## edit an existing archive spec
   elsif ($r_command eq 'edit') {
-    $bak->Edit_Spec($r_place);
+    exec $bak->editor . ' ' . $bak->spec;
   }
 
   ## open the archive proper
   elsif ($r_command eq 'whereis') {
-    say $bak->Locate_Archive($r_place);
+    say $bak->archive();
   }
 
   ## show information about archive

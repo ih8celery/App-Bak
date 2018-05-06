@@ -50,15 +50,22 @@ sub new {
   bless $n_config, $n_class; 
 }
 
-sub Edit_Spec {
-  1;
+sub spec {
+  my ($self) = @_;
+
+  return $self->{SPEC_FILE};
 }
 
-# return the path to the literal archive represented by the current object
-sub Locate_Archive {
-  my ($la_self) = @_;
+sub archive {
+  my ($self) = @_;
 
-  return $la_self->{ARCHIVE};
+  return $self->{ARCHIVE};
+}
+
+sub editor {
+  my ($self) = @_;
+
+  return $self->{EDITOR};
 }
 
 sub Add {
