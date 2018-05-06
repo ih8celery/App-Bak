@@ -74,7 +74,7 @@ sub save_spec {
   DumpFile($_[0]->{SPEC_FILE}, $_[0]->{SPEC_YAML});
 }
 
-sub down_file {
+sub down_files {
   my ($self, $k) = @_;
 
   if (exists $self->{DOWN_FILE} && $self->{DOWN_FILE} ne '') {
@@ -154,6 +154,9 @@ sub _transfer_file {
   if ($method eq 'COPY') {
     copy($src, $dest);
   }
+  elsif ($method eq 'MOVE') {
+    move($src, $dest);
+  }
   else {
     die "error: transfer_file: $method is not a valid method";
   }
@@ -210,6 +213,11 @@ sub Remove {
       }
 
       delete $self->{SPEC_YAML}{files}{$_};
+
+      my $file = catfile($self->{ARCHIVE}, $_);
+      if (-e $file) {
+        unlink $file;
+      }
     }
   }
   else {
@@ -217,6 +225,11 @@ sub Remove {
 
     foreach (@keys) {
       delete $self->{SPEC_YAML}{files}{$_};
+
+      my $file = catfile($self->{ARCHIVE}, $_);
+      if (-e $file) {
+        unlink $file;
+      }
     }
   }
 
@@ -232,7 +245,13 @@ sub Describe {
     my $res = $k . ' (' . $self->{SPEC_YAML}{files}{$k}{up_file} . ' -> ';
     
     if (exists $self->{SPEC_YAML}{files}{$k}{down_file}) {
-      $res .= $self->{SPEC_YAML}{files}{$k}{down_file} . ')';
+      my $df = $self->{SPEC_YAML}{files}{$k}{down_file};
+      if (ref $df eq 'ARRAY') {
+        $res .= join(', ', @$df) . ')';
+      }
+      else {
+        $res .= $df . ')';
+      }
     }
     else {
       $res .= $self->{SPEC_YAML}{files}{$k}{up_file} . ')';
@@ -253,21 +272,35 @@ sub Down {
     for my $place (@places) {
       if (exists $self->{SPEC_YAML}{files}{$place}) {
         my $src    = catfile($self->{ARCHIVE}, $place);
-        my $dest   = $self->down_file($place);
+        my $dest   = $self->down_files($place);
         my $method = $self->down_method($place);
 
-        _transfer_file($method, $src, $dest);
+        if (ref $dest eq 'ARRAY') {
+          foreach (@$dest) {
+            _transfer_file($method, $src, $_);
+          }
+        }
+        else {
+          _transfer_file($method, $src, $dest);
+        }
       }
     }
   }
   else {
     my @keys = grep { $_ !~ /^_/ } keys %{ $self->{SPEC_YAML}{files} };
     for my $key (@keys) {
-      my $dest = catfile($self->{ARCHIVE}, $key);
-      my $src  = $self->up_file($key);
-      my $method = $self->up_method($key);
+      my $src    = catfile($self->{ARCHIVE}, $key);
+      my $dest   = $self->down_files($key);
+      my $method = $self->down_method($key);
 
-      _transfer_file($method, $src, $dest);
+      if (ref $dest eq 'ARRAY') {
+        foreach (@$dest) {
+          _transfer_file($method, $src, $_);
+        }
+      }
+      else {
+        _transfer_file($method, $src, $dest);
+      }
     } 
   }
 }
