@@ -122,7 +122,19 @@ sub Add {
 }
 
 sub Remove {
-  1;
+  my ($self, $place) = @_;
+
+  # make sure there is something to remove
+  unless (@$place) {
+    die "error: Remove: no file specified";
+  }
+  
+  unless (exists $self->{SPEC_YAML}{files}{ $place->[0] }) {
+    die "error: Remove: file named $place->[0] does not exist";
+  }
+
+  delete $self->{SPEC_YAML}{files}{ $place->[0] };
+  $self->save_spec();
 }
 
 # return a string representation of the files in an archive's spec
