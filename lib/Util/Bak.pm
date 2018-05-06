@@ -250,29 +250,54 @@ sub Describe {
 sub Down {
   my ($self, @places) = @_;
 
-  for my $place (@places) {
-    if (exists $self->{SPEC_YAML}{files}{$place}) {
-      my $src    = catfile($self->{ARCHIVE}, $place);
-      my $dest   = $self->down_file($place);
-      my $method = $self->down_method($place);
+  if (@places) {
+    for my $place (@places) {
+      if (exists $self->{SPEC_YAML}{files}{$place}) {
+        my $src    = catfile($self->{ARCHIVE}, $place);
+        my $dest   = $self->down_file($place);
+        my $method = $self->down_method($place);
+
+        _transfer_file($method, $src, $dest);
+      }
+    }
+  }
+  else {
+    my @keys = grep { $_ !~ /^_/ } keys %{ $self->{SPEC_YAML}{files} };
+    for my $key (@keys) {
+      my $dest = catfile($self->{ARCHIVE}, $key);
+      my $src  = $self->up_file($key);
+      my $method = $self->up_method($key);
 
       _transfer_file($method, $src, $dest);
-    }
+    } 
   }
 }
 
 sub Up {
   my ($self, @places) = @_;
   
-  for my $place (@places) {
-    if (exists $self->{SPEC_YAML}{files}{$place}) {
-      my $dest   = catfile($self->{ARCHIVE}, $place);
-      my $src    = $self->up_file($place);
-      my $method = $self->up_method($place);
+  if (@places) {
+    for my $place (@places) {
+      if (exists $self->{SPEC_YAML}{files}{$place}) {
+        my $dest   = catfile($self->{ARCHIVE}, $place);
+        my $src    = $self->up_file($place);
+        my $method = $self->up_method($place);
 
-      _transfer_file($method, $src, $dest);
+        _transfer_file($method, $src, $dest);
+      }
     }
   }
+  else {
+    my @keys = grep { $_ !~ /^_/ } keys %{ $self->{SPEC_YAML}{files} };
+    for my $key (@keys) {
+      my $dest = catfile($self->{ARCHIVE}, $key);
+      my $src  = $self->up_file($key);
+      my $method = $self->up_method($key);
+
+      _transfer_file($method, $src, $dest);
+    } 
+  }
+
 }
 
 1;
