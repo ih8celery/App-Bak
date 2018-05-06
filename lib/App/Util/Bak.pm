@@ -16,7 +16,7 @@ BEGIN {
 
 use Util::Bak;
 
-use Getopt::Long;
+use Getopt::Long qw/:config no_ignore_case no_auto_abbrev/;
 use File::Spec::Functions qw/catfile/;
 
 our $VERSION = '0.001000';
@@ -127,10 +127,10 @@ sub Run {
     'v|version'       => \&version,
     'V|verbose'       => sub { $r_conf->{VERBOSE} = 1; },
     'e|editor=s'      => \$r_conf->{EDITOR},
-    'f|up-file=s'     => \$r_conf->{UP_FILE},
-    'F|down-file=s'   => \$r_conf->{DOWN_FILE},
-    'm|up-method=s'   => \$r_conf->{UP_METHOD},
-    'M|down-method=s' => \$r_conf->{DOWN_METHOD},
+    'F|up-file=s'     => \$r_conf->{UP_FILE},
+    'f|down-file=s'   => \$r_conf->{DOWN_FILE},
+    'M|up-method=s'   => \$r_conf->{UP_METHOD},
+    'm|down-method=s' => \$r_conf->{DOWN_METHOD},
     'r|registry=s'    => \$r_conf->{REGISTRY},
     'a|archive=s'     => \$r_conf->{ARCHIVE},
   );
