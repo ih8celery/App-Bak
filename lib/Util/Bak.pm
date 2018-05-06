@@ -263,10 +263,15 @@ sub Down {
 
 sub Up {
   my ($self, @places) = @_;
-
-  # foreach $place, copy {up_file} into $place within {archive}
-  for my $place (@places) {
   
+  for my $place (@places) {
+    if (exists $self->{SPEC_YAML}{files}{$place}) {
+      my $dest   = catfile($self->{ARCHIVE}, $place);
+      my $src    = $self->up_file($place);
+      my $method = $self->up_method($place);
+
+      _transfer_file($method, $src, $dest);
+    }
   }
 }
 
