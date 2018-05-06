@@ -14,7 +14,7 @@ BEGIN {
   our @EXPORT = qw/&Run/;
 }
 
-use Util::Bak;
+use App::Util::Bak::Archive;
 
 use Getopt::Long qw/:config no_ignore_case no_auto_abbrev/;
 use File::Spec::Functions qw/catfile/;
@@ -142,7 +142,7 @@ sub Run {
   my ($r_file, @r_places) = @ARGV;
   my $r_spec = find_archive_spec($r_conf->{REGISTRY}, $r_file);
 
-  my $bak = Util::Bak->new($r_spec, $r_conf);
+  my $bak = App::Util::Bak::Archive->new($r_spec, $r_conf);
 
   # collect archive files into the archive
   # this introduces files recently added to the spec

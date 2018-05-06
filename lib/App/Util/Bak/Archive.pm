@@ -1,6 +1,6 @@
 #! /usr/bin/env perl
 
-package Util::Bak;
+package App::Util::Bak::Archive;
 
 use strict;
 use warnings;
