@@ -194,7 +194,7 @@ sub Run {
 
   ## show information about archive
   else {
-    $bak->Describe($r_place);
+    say $bak->Describe();
   }
 }
 

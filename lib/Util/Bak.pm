@@ -76,8 +76,28 @@ sub Remove {
   1;
 }
 
+# return a string representation of the files in an archive's spec
 sub Describe {
-  1;
+  my ($self) = @_;
+
+  my $describer = sub {
+    my ($k) = @_;
+
+    my $res = $k . ' (' . $self->{SPEC_YAML}{$k}{up_file} . ' -> ';
+    
+    if (exists $self->{SPEC_YAML}{$k}{down_file}) {
+      $res .= $self->{SPEC_YAML}{$k}{down_file} . ')';
+    }
+    else {
+      $res .= $self->{SPEC_YAML}{$k}{up_file} . ')';
+    }
+
+    return $res;
+  };
+
+  my @keys = grep { $_ !~ /^_/ } keys %{ $self->{SPEC_YAML} };
+  @keys = map { $_ = $describer->($_); } @keys;
+  return join("\n", @keys);
 }
 
 sub Down {
