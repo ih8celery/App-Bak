@@ -118,7 +118,7 @@ sub find_archive_spec {
     return $fas_location;
   }
   else {
-    die "error: could not find an archive (using \'$fas_location\')";
+    die "error: could not find an archive named $fas_ar_name";
   }
 }
 
@@ -161,23 +161,24 @@ sub Run {
   # create an Util::Bak object
   my $bak = Util::Bak->new($r_spec, $r_conf);
 
-  # decide between operations on archive
-  ## collect archive files
+  ## collect archive files into the archive
+  ## this introduces files recently added to the spec
+  ## removes files not found in the spec
   if ($r_command eq 'up') {
     $bak->Up($r_place);
   }
 
-  ## disseminate archive files
+  ## disseminate archive files to their "down" locations
   elsif ($r_command eq 'down') {
     $bak->Down($r_place);
   }
 
-  ## add to archive or create a new archive
+  ## add files to archive spec
   elsif ($r_command eq 'add') {
     $bak->Add($r_place, @r_rest);
   }
 
-  ## remove archive or from archive
+  ## remove files from archive spec
   elsif ($r_command eq 'rm') {
     $bak->Remove($r_place, @r_rest);
   }
@@ -193,7 +194,7 @@ sub Run {
   }
 
   ## show information about archive
-  else {
+  elsif ($r_command eq 'describe') {
     say $bak->Describe();
   }
 }

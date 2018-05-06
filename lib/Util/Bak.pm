@@ -7,7 +7,7 @@ use warnings;
 
 use feature qw/say/;
 
-use YAML::XS qw/LoadFile/;
+use YAML::XS qw/LoadFile DumpFile/;
 
 sub new {
   my ($n_class, $n_ar_path, $n_defaults) = @_;
@@ -37,7 +37,7 @@ sub new {
   my $n_config  = {
     ARCHIVE     => $n_archive,
     SPEC_FILE   => $n_ar_path,
-    SPEC_YAML   => $n_yaml->{files},
+    SPEC_YAML   => $n_yaml,
     VERBOSE     => $n_defaults->{VERBOSE},
     UP_FILE     => $n_defaults->{UP_FILE},
     DOWN_FILE   => $n_defaults->{DOWN_FILE},
@@ -68,8 +68,57 @@ sub editor {
   return $self->{EDITOR};
 }
 
+sub save_spec {
+  DumpFile($_[0]->{SPEC_FILE}, $_[0]->{SPEC_YAML});
+}
+
 sub Add {
-  1;
+  my ($self, $place, @rest) = @_;
+
+  # make sure there is something to add and no preexisting files of the
+  # same name
+  unless (@$place) {
+    die "error: Add: no name for new file in archive";
+  }
+  
+  if (exists $self->{SPEC_YAML}{files}{ $place->[0] }) {
+    die "error: Add: file named $place->[0] already exists";
+  }
+
+  my $item = {
+    up_method   => 'COPY',
+    down_method => 'COPY',
+  };
+
+  # set the "up file" and "down file" of the new archive file
+  ## set "up file"
+  if (exists $rest[0]) {
+    $item->{up_file} = $rest[0];
+  }
+  else {
+    if (exists $self->{UP_FILE} && $self->{UP_FILE} ne '') {
+      $item->{up_file} = $self->{UP_FILE};
+    }
+    else {
+      die 'error: Add: no up file specified';
+    }
+  }
+
+  ## set "down file"
+  if (exists $rest[1]) {
+    $item->{down_file} = $rest[1];
+  }
+  else {
+    if (exists $self->{DOWN_FILE} && $self->{DOWN_FILE} ne '') {
+      $item->{down_file} = $self->{DOWN_FILE};
+    }
+    else {
+      $item->{down_file} = $item->{up_file};
+    }
+  }
+
+  $self->{SPEC_YAML}{files}{ $place->[0] } = $item;
+  $self->save_spec();
 }
 
 sub Remove {
@@ -83,19 +132,19 @@ sub Describe {
   my $describer = sub {
     my ($k) = @_;
 
-    my $res = $k . ' (' . $self->{SPEC_YAML}{$k}{up_file} . ' -> ';
+    my $res = $k . ' (' . $self->{SPEC_YAML}{files}{$k}{up_file} . ' -> ';
     
-    if (exists $self->{SPEC_YAML}{$k}{down_file}) {
-      $res .= $self->{SPEC_YAML}{$k}{down_file} . ')';
+    if (exists $self->{SPEC_YAML}{files}{$k}{down_file}) {
+      $res .= $self->{SPEC_YAML}{files}{$k}{down_file} . ')';
     }
     else {
-      $res .= $self->{SPEC_YAML}{$k}{up_file} . ')';
+      $res .= $self->{SPEC_YAML}{files}{$k}{up_file} . ')';
     }
 
     return $res;
   };
 
-  my @keys = grep { $_ !~ /^_/ } keys %{ $self->{SPEC_YAML} };
+  my @keys = grep { $_ !~ /^_/ } keys %{ $self->{SPEC_YAML}{files} };
   @keys = map { $_ = $describer->($_); } @keys;
   return join("\n", @keys);
 }
