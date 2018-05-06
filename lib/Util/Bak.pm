@@ -160,18 +160,13 @@ sub _transfer_file {
 }
 
 sub Add {
-  my ($self, $place, @rest) = @_;
+  my ($self, @places) = @_;
 
-  # make sure there is something to add and no preexisting files of the
-  # same name
-  unless (@$place) {
+  # make sure there is something to add
+  unless (@places) {
     die "error: Add: no name for new file in archive";
   }
   
-  if (exists $self->{SPEC_YAML}{files}{ $place->[0] }) {
-    die "error: Add: file named $place->[0] already exists";
-  }
-
   my $item = {
     up_method   => 'COPY',
     down_method => 'COPY',
@@ -179,48 +174,52 @@ sub Add {
 
   # set the "up file" and "down file" of the new archive file
   ## set "up file"
-  if (exists $rest[0]) {
-    $item->{up_file} = $rest[0];
+  if (exists $self->{UP_FILE} && $self->{UP_FILE} ne '') {
+    $item->{up_file} = $self->{UP_FILE};
   }
   else {
-    if (exists $self->{UP_FILE} && $self->{UP_FILE} ne '') {
-      $item->{up_file} = $self->{UP_FILE};
-    }
-    else {
-      die 'error: Add: no up file specified';
-    }
+    die 'error: Add: no up file specified';
   }
 
   ## set "down file"
-  if (exists $rest[1]) {
-    $item->{down_file} = $rest[1];
+  if (exists $self->{DOWN_FILE} && $self->{DOWN_FILE} ne '') {
+    $item->{down_file} = $self->{DOWN_FILE};
   }
   else {
-    if (exists $self->{DOWN_FILE} && $self->{DOWN_FILE} ne '') {
-      $item->{down_file} = $self->{DOWN_FILE};
-    }
-    else {
-      $item->{down_file} = $item->{up_file};
-    }
+    $item->{down_file} = $item->{up_file};
   }
 
-  $self->{SPEC_YAML}{files}{ $place->[0] } = $item;
+  foreach (@places) {
+    if (exists $self->{SPEC_YAML}{files}{$_}) {
+      die "error: Add: file named $_ already exists";
+    }
+
+    $self->{SPEC_YAML}{files}{$_} = $item;
+  }
+
   $self->save_spec();
 }
 
 sub Remove {
-  my ($self, $place) = @_;
+  my ($self, @places) = @_;
 
-  # make sure there is something to remove
-  unless (@$place) {
-    die "error: Remove: no file specified";
+  if (@places) {
+    foreach (@places) {
+      unless (exists $self->{SPEC_YAML}{files}{$_}) {
+        die "error: Remove: file named $_ does not exist";
+      }
+
+      delete $self->{SPEC_YAML}{files}{$_};
+    }
   }
-  
-  unless (exists $self->{SPEC_YAML}{files}{ $place->[0] }) {
-    die "error: Remove: file named $place->[0] does not exist";
+  else {
+    my @keys = grep { $_ !~ /^_/ } keys %{ $self->{SPEC_YAML}{files} };
+
+    foreach (@keys) {
+      delete $self->{SPEC_YAML}{files}{$_};
+    }
   }
 
-  delete $self->{SPEC_YAML}{files}{ $place->[0] };
   $self->save_spec();
 }
 

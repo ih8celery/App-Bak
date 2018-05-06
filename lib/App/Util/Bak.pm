@@ -43,7 +43,6 @@ sub version {
   exit 0;
 }
 
-# process subcommand
 sub get_subcommand {
   # with no args, just print help
   help() unless @ARGV;
@@ -81,18 +80,6 @@ sub get_subcommand {
   else {
     die "error: $gs_first is not a subcommand";
   }
-}
-
-# process arguments: this produces a "place" and a list of other args.
-# the place points to a directory or YAML file and, in case of the latter,
-# the relevant data within the YAML file
-sub process_args {
-  my $pa_first = shift @ARGV || die "error: process_args: no args found";
-
-  # split into registry filename and the "rest" of key and drop them
-  # with the rest of the command line arguments
-  my @pa_path_parts = split /\./, $pa_first;
-  return (shift(@pa_path_parts), [ @pa_path_parts ] , @ARGV);
 }
 
 sub find_archive_spec {
@@ -148,54 +135,51 @@ sub Run {
     'a|archive=s'     => \$r_conf->{ARCHIVE},
   );
 
-  # get subcommand
   my $r_command = get_subcommand();
 
-  # get options
   exit 1 unless GetOptions(%r_opts);
 
-  # process arguments
-  my ($r_file, $r_place, @r_rest) = process_args();
+  my ($r_file, @r_places) = @ARGV;
   my $r_spec = find_archive_spec($r_conf->{REGISTRY}, $r_file);
 
   # create an Util::Bak object
   my $bak = Util::Bak->new($r_spec, $r_conf);
 
-  ## collect archive files into the archive
-  ## this introduces files recently added to the spec
-  ## removes files not found in the spec
+  # collect archive files into the archive
+  # this introduces files recently added to the spec
+  # removes files not found in the spec
   if ($r_command eq 'up') {
-    $bak->Up(@$r_place);
+    $bak->Up(@r_places);
   }
 
-  ## disseminate archive files to their "down" locations
+  # disseminate archive files to their "down" locations
   elsif ($r_command eq 'down') {
-    $bak->Down(@$r_place);
+    $bak->Down(@r_places);
   }
 
-  ## add files to archive spec
+  # add files to archive spec
   elsif ($r_command eq 'add') {
-    $bak->Add($r_place, @r_rest);
+    $bak->Add(@r_places);
   }
 
-  ## remove files from archive spec
+  # remove files from archive spec
   elsif ($r_command eq 'rm') {
-    $bak->Remove($r_place, @r_rest);
+    $bak->Remove(@r_places);
   }
 
-  ## edit an existing archive spec
+  # edit an existing archive spec
   elsif ($r_command eq 'edit') {
     exec $bak->editor . ' ' . $bak->spec;
   }
 
-  ## open the archive proper
+  # open the archive proper
   elsif ($r_command eq 'whereis') {
-    say $bak->archive();
+    say $bak->archive;
   }
 
-  ## show information about archive
+  # show information about archive
   elsif ($r_command eq 'describe') {
-    say $bak->Describe();
+    say $bak->Describe;
   }
 }
 
