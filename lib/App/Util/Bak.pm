@@ -63,8 +63,8 @@ sub get_subcommand {
   elsif ($gs_first eq 'rm') {
     return 'rm';
   }
-  elsif ($gs_first eq 'ls') {
-    return 'ls';
+  elsif ($gs_first eq 'describe') {
+    return 'describe';
   }
   elsif ($gs_first eq 'edit') {
     return 'edit';
@@ -75,8 +75,8 @@ sub get_subcommand {
   elsif ($gs_first eq 'down') {
     return 'down';
   }
-  elsif ($gs_first eq 'look') {
-    return 'look';
+  elsif ($gs_first eq 'whereis') {
+    return 'whereis';
   }
   else {
     die "error: $gs_first is not a subcommand";
@@ -95,30 +95,30 @@ sub process_args {
   return (shift(@pa_path_parts), [ @pa_path_parts ] , @ARGV);
 }
 
-sub get_archive_path {
-  my ($gap_registry, $gap_ar_name) = @_;
-  my $gap_location = '';
+sub find_archive_spec {
+  my ($fas_registry, $fas_ar_name) = @_;
+  my $fas_location = '';
 
   # read each line of file, looking for archive name
-  open my $gap_fh, '<', $gap_registry;
+  open my $fas_fh, '<', $fas_registry;
 
-  while ((my $gap_line = <$gap_fh>)) {
-    chomp $gap_line;
-    my @gap_fields = split /:\s+/, $gap_line;
+  while ((my $fas_line = <$fas_fh>)) {
+    chomp $fas_line;
+    my @fas_fields = split /:\s+/, $fas_line;
 
-    if ($gap_fields[0] eq $gap_ar_name) {
-      $gap_location = $gap_fields[1];
+    if ($fas_fields[0] eq $fas_ar_name) {
+      $fas_location = $fas_fields[1];
       last;
     }
   }
 
-  close $gap_fh;
+  close $fas_fh;
 
-  if (-e $gap_location) {
-    return $gap_location;
+  if (-e $fas_location) {
+    return $fas_location;
   }
   else {
-    die "error: could not find an archive (using \'$gap_location\')";
+    die "error: could not find an archive (using \'$fas_location\')";
   }
 }
 
@@ -156,10 +156,10 @@ sub Run {
 
   # process arguments
   my ($r_file, $r_place, @r_rest) = process_args();
-  my $r_archive = get_archive_path($r_conf->{REGISTRY}, $r_file);
+  my $r_spec = find_archive_spec($r_conf->{REGISTRY}, $r_file);
 
   # create an Util::Bak object
-  my $bak = Util::Bak->new($r_archive, $r_conf);
+  my $bak = Util::Bak->new($r_spec, $r_conf);
 
   # decide between operations on archive
   ## collect archive files
@@ -188,13 +188,13 @@ sub Run {
   }
 
   ## open the archive proper
-  elsif ($r_command eq 'look') {
-    $bak->Edit_Archive($r_place);
+  elsif ($r_command eq 'whereis') {
+    say $bak->Locate_Archive($r_place);
   }
 
   ## show information about archive
   else {
-    $bak->Show($r_place);
+    $bak->Describe($r_place);
   }
 }
 

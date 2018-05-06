@@ -12,9 +12,32 @@ use YAML::XS qw/LoadFile/;
 sub new {
   my ($n_class, $n_ar_path, $n_defaults) = @_;
 
+  # find the location of the archive
+  ## if an archive is passed in via the defaults, the
+  ## archive spec will not be consulted for the location of the archive;
+  ## otherwise, the value of 'home'in the spec will be used
+  my $n_yaml = LoadFile($n_ar_path);
+  my $n_archive;
+  if (exists $n_defaults->{ARCHIVE} && -e $n_defaults->{ARCHIVE}) {
+    $n_archive = $n_defaults->{ARCHIVE};
+  }
+  elsif (exists $n_yaml->{home}) {
+    $n_archive = $n_yaml->{home};
+  }
+  else {
+    die "malformed spec error: new: spec does not define " 
+      . "archive home";
+  }
+
+  # the archive must contain a slot for files
+  unless (exists $n_yaml->{files}) {
+    die "malformed spec error: new: spec does not define a files hash";
+  }
+
   my $n_config  = {
-    ARCHIVE     => $n_ar_path,
-    SPEC        => LoadFile($n_ar_path),
+    ARCHIVE     => $n_archive,
+    SPEC_FILE   => $n_ar_path,
+    SPEC_YAML   => $n_yaml->{files},
     VERBOSE     => $n_defaults->{VERBOSE},
     UP_FILE     => $n_defaults->{UP_FILE},
     DOWN_FILE   => $n_defaults->{DOWN_FILE},
@@ -31,8 +54,11 @@ sub Edit_Spec {
   1;
 }
 
-sub Edit_Archive {
-  1;
+# return the path to the literal archive represented by the current object
+sub Locate_Archive {
+  my ($la_self) = @_;
+
+  return $la_self->{ARCHIVE};
 }
 
 sub Add {
@@ -43,7 +69,7 @@ sub Remove {
   1;
 }
 
-sub Show {
+sub Describe {
   1;
 }
 
