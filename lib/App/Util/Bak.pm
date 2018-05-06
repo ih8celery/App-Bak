@@ -117,7 +117,7 @@ sub Run {
     DOWN_FILE   => '',
     UP_METHOD   => 'COPY',
     DOWN_METHOD => 'COPY',
-    REGISTRY    => catfile($ENV{HOME}, '.bak_registry'),
+    REGISTRY    => ($ENV{BAK_REGISTRY} || catfile($ENV{HOME}, '.bak_registry')),
     ARCHIVE     => '',
     EDITOR      => ($ENV{EDITOR} || 'vim'),
   };
@@ -142,7 +142,6 @@ sub Run {
   my ($r_file, @r_places) = @ARGV;
   my $r_spec = find_archive_spec($r_conf->{REGISTRY}, $r_file);
 
-  # create an Util::Bak object
   my $bak = Util::Bak->new($r_spec, $r_conf);
 
   # collect archive files into the archive
@@ -196,15 +195,17 @@ C<bak> relies on YAML files to describe what an archive is. here is an
 example archive definition:
 
   ---
-  _root: ~/.config/nvim
-  plugin:
-    up_file: plugins.vim
-    up_method: COPY
-    down_file: plugins.vim
-    down_method: COPY
-  init:
-    up_file: init.vim
-    down_file: init.vim
+  home: /home/backups/bak
+  files:
+    _root: ~/.config/nvim
+    plugin:
+      up_file: plugins.vim
+      up_method: COPY
+      down_file: plugins.vim
+      down_method: COPY
+    init:
+      up_file: init.vim
+      down_file: init.vim
   ...
 
 =head1 Subcommands
@@ -223,17 +224,21 @@ send archive files "down" to their destinations
 
 delete an archive or file in the archive
 
-=item * new
+=item * add
 
-create an archive or insert a file into an existing archive
+insert a file into an existing archive
 
-=item * ls
+=item * describe
 
 show the files present in an archive
 
 =item * edit
 
 use editor to open an archive specification for manual editing
+
+=item * whereis 
+
+print the path to archive
 
 =back
 
@@ -284,19 +289,21 @@ set the file used as the specification of the archive
 set the file or directory used as the destination of C<up> or the source
 of C<down>
 
+=item * -e|--editor=s
+
+set the editor used to open an archive spec
+
 =back
 
 =head1 Examples
 
-bak new dotfiles
+bak add dotfiles vim -F ~/.vimrc
 
-bak new dotfiles.vim ~/.vimrc
-
-bak new dotfiles.bash ~/.bashrc
+bak new dotfiles bash -F ~/.bashrc
 
 bak up dotfiles
 
-bak down dotfiles.bash
+bak down dotfiles bash
 
 =head1 License
 
