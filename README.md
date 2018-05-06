@@ -9,27 +9,18 @@
 example archive definition:
 
     ---
-    _root: ~/.config/nvim
-    plugin:
-      up_file: plugins.vim
-      up_method: COPY
-      down_file: plugins.vim
-      down_method: COPY
-    init:
-      up_file: init.vim
-      down_file: init.vim
+    home: /home/backups/bak
+    files:
+      _root: ~/.config/nvim
+      plugin:
+        up_file: plugins.vim
+        up_method: COPY
+        down_file: plugins.vim
+        down_method: COPY
+      init:
+        up_file: init.vim
+        down_file: init.vim
     ...
-
-# Install
-
-run the following commands:
-
-```shell
-perl Build.PL
-./Build
-./Build test
-./Build install
-```
 
 # Subcommands
 
@@ -45,17 +36,21 @@ perl Build.PL
 
     delete an archive or file in the archive
 
-- new
+- add
 
-    create an archive or insert a file into an existing archive
+    insert a file into an existing archive
 
-- ls
+- describe
 
     show the files present in an archive
 
 - edit
 
     use editor to open an archive specification for manual editing
+
+- whereis 
+
+    print the path to archive
 
 # Options
 
@@ -102,17 +97,19 @@ perl Build.PL
     set the file or directory used as the destination of `up` or the source
     of `down`
 
+- -e|--editor=s
+
+    set the editor used to open an archive spec
+
 # Examples
 
-bak new dotfiles
+bak add dotfiles vim -F ~/.vimrc
 
-bak new dotfiles.vim ~/.vimrc
-
-bak new dotfiles.bash ~/.bashrc
+bak new dotfiles bash -F ~/.bashrc
 
 bak up dotfiles
 
-bak down dotfiles.bash
+bak down dotfiles bash
 
 # License
 
