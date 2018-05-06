@@ -7,28 +7,40 @@ use warnings;
 
 use feature qw/say/;
 
+BEGIN {
+  use Exporter;
+
+  our @ISA = qw/Exporter/;
+  our @EXPORT = qw/&Run/;
+}
+
 use Util::Bak;
 
 use Getopt::Long;
+use File::Spec::Functions qw/catfile/;
 
 our $VERSION = '0.001000';
 
 sub help {
-  say <<EOM;
-  '-h|--help'          print this help message
-  '-v|--version'       print bak's current version
-  '-V|--verbose'       print messages verbosely
-  '-f|--up-file=s'     set the file used as the source for up
-  '-F|--down-file=s'   set the file used as destination of down
-  '-m|--up-method=s'   set the method used by up to transfer files
-  '-M|--down-method=s' set the method used by down to transfer files
-  '-r|--registry=s'    use a particular YAML file as spec for archive
-  '-a|--archive=s'     use a particular file or directory as archive
+  print <<EOM;
+  -h|--help          print this help message
+  -v|--version       print bak's current version
+  -V|--verbose       print messages verbosely
+  -f|--up-file=s     set the file used as the source for up
+  -F|--down-file=s   set the file used as destination of down
+  -m|--up-method=s   set the method used by up to transfer files
+  -M|--down-method=s set the method used by down to transfer files
+  -r|--registry=s    use a particular YAML file as spec for archive
+  -a|--archive=s     use a particular file or directory as archive
 EOM
+
+  exit 0;
 }
 
 sub version {
   say "bak $VERSION";
+
+  exit 0;
 }
 
 # process subcommand
@@ -91,6 +103,7 @@ sub get_archive_path {
   open my $gap_fh, '<', $gap_registry;
 
   while ((my $gap_line = <$gap_fh>)) {
+    chomp $gap_line;
     my @gap_fields = split /:\s+/, $gap_line;
 
     if ($gap_fields[0] eq $gap_ar_name) {
@@ -117,22 +130,22 @@ sub Run {
     DOWN_FILE   => '',
     UP_METHOD   => 'COPY',
     DOWN_METHOD => 'COPY',
-    REGISTRY    => '',
+    REGISTRY    => catfile($ENV{HOME}, '.bak_registry'),
     ARCHIVE     => '',
     EDITOR      => ($ENV{EDITOR} || 'vim'),
   };
 
   my %r_opts = (
-    '-h|--help'          => \&help,
-    '-v|--version'       => \&version,
-    '-V|--verbose'       => sub { $r_conf->{VERBOSE} = 1; },
-    '-e|--editor=s'      => \$r_conf->{EDITOR},
-    '-f|--up-file=s'     => \$r_conf->{UP_FILE},
-    '-F|--down-file=s'   => \$r_conf->{DOWN_FILE},
-    '-m|--up-method=s'   => \$r_conf->{UP_METHOD},
-    '-M|--down-method=s' => \$r_conf->{DOWN_METHOD},
-    '-r|--registry=s'    => \$r_conf->{REGISTRY},
-    '-a|--archive=s'     => \$r_conf->{ARCHIVE},
+    'h|help'          => \&help,
+    'v|version'       => \&version,
+    'V|verbose'       => sub { $r_conf->{VERBOSE} = 1; },
+    'e|editor=s'      => \$r_conf->{EDITOR},
+    'f|up-file=s'     => \$r_conf->{UP_FILE},
+    'F|down-file=s'   => \$r_conf->{DOWN_FILE},
+    'm|up-method=s'   => \$r_conf->{UP_METHOD},
+    'M|down-method=s' => \$r_conf->{DOWN_METHOD},
+    'r|registry=s'    => \$r_conf->{REGISTRY},
+    'a|archive=s'     => \$r_conf->{ARCHIVE},
   );
 
   # get subcommand
@@ -143,9 +156,10 @@ sub Run {
 
   # process arguments
   my ($r_file, $r_place, @r_rest) = process_args();
+  my $r_archive = get_archive_path($r_conf->{REGISTRY}, $r_file);
 
   # create an Util::Bak object
-  my $bak = Util::Bak->new(get_archive_path($r_file), $r_conf);
+  my $bak = Util::Bak->new($r_archive, $r_conf);
 
   # decide between operations on archive
   ## collect archive files
