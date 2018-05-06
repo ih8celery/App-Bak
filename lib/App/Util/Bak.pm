@@ -23,6 +23,19 @@ our $VERSION = '0.001000';
 
 sub help {
   print <<EOM;
+Usage:
+  bak [-h|-v] [subcommand] [options] [arguments]
+
+Subcommands:
+  add      add file to archive spec
+  rm       remove file from spec and archive
+  describe print brief description of files in spec
+  edit     open spec with editor
+  up       copy or move files into archive from their "up" locations
+  down     copy, move, or link files to their "down" locations
+  whereis  print the full path to archive
+
+Options:
   -h|--help          print this help message
   -v|--version       print bak's current version
   -V|--verbose       print messages verbosely
