@@ -333,3 +333,66 @@ sub Up {
 }
 
 1;
+
+=head1 Name
+
+  App::Util::Bak::Archive
+
+=head1 Introduction
+
+this modules defines the class of the same name, which is the backend
+used by the command-line interface (in App::Util::Bak). it encapsulates
+an "archive": a combination of an archive description in YAML called
+the archive spec; and an archive itself. the spec and archive are not
+necessarily tied to one another; rather, the spec models an archive and
+any archive which is associated with the spec will be made to fit the
+spec if possible.
+
+=head1 API
+
+=over 4
+
+=item * new($class, $spec, $config)
+
+construct a new object. $spec is the path to an archive spec.
+
+=item * Up($self, @args)
+
+use up_method to transfer files into archive
+
+=item * Down($self, @args)
+
+use down_method to transfer files out of archive
+
+=item * Add($self, @args)
+
+add files to archive spec using each element of @args as the name of the
+file in the archive. "up_file", "up_method", "down_file", "down_method",
+are filled in using the corresponding fields of $self
+
+=item * Remove($self, @args)
+
+remove each file in @args from spec
+
+=item * Describe($self)
+
+return files in archive spec
+
+=item * spec($self)
+
+return path to archive spec
+
+=item * archive($self)
+
+return path to archive
+
+=item * editor($self)
+
+return the default editor
+
+=back
+
+=head1 License
+
+Copyright (C) 2018 Adam Marshall.
+this software is distributed under the MIT License.
