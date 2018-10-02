@@ -1,5 +1,5 @@
 ---
-name: 'App-Util-Bak'
+name: 'App-Devel-Delivery'
 abstract: 'App to register and then find or edit configuration files'
 author:
   - 'Adam Marshall'
@@ -17,7 +17,7 @@ test_requires:
   Test::More: '0'
 dynamic_config: 1
 resources:
-  repository: https://github.com/ih8celery/App-Util-Bak.git
+  repository: https://github.com/ih8celery/App-Devel-Delivery.git
 license: 'MIT'
 version: '0.001000'
 

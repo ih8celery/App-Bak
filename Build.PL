@@ -6,7 +6,7 @@ use warnings;
 use Module::Build;
 
 my $build = Module::Build->new(
-  module_name    => 'App::Util::Bak',
+  module_name    => 'App::Devel::Delivery',
   license        => 'MIT',
   requires       => {
     'Getopt::Long'          => '>2.2',

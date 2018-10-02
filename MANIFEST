@@ -1,6 +1,6 @@
-README.md           introduce App::Util::Bak
+README.md           introduce App::Devel::Delivery
 MANIFEST            list the main project files
-Build.PL            initialize the build of App::Util::Bak
+Build.PL            initialize the build of App::Devel::Delivery
 META.yml            present project abstract
-lib/App/Util/Bak.pm define command-line interface of project
-lib/Util/Bak.pm     define App::Util::Bak's backend
+lib/App/Devel/Delivery.pm define command-line interface of project
+lib/Devel/Delivery.pm     define the backend

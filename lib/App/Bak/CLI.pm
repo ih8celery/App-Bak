@@ -17,9 +17,9 @@ BEGIN {
 
 # import modules
 use Carp qw/croak/;
-use Devel::Project::Delivery;
-use Devel::Project::Package;
-use Devel::Project::Config;
+use Project::Delivery;
+use Project::Package;
+use Project::Config;
 use App::Bak::Config;
 
 use File::Spec::Functions qw/catfile/;
@@ -126,8 +126,8 @@ sub Run {
     places     => [ @ARGV ]
   });
 
-  my $bak = Devel::Project::Delivery
-    ->new(Devel::Project::Config->new($project));
+  my $bak = Project::Delivery
+    ->new(Project::Config->new($project));
 
   if ($command eq 'up') {
     $bak->store($app_config);
