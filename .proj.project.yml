@@ -1,0 +1,7 @@
+---
+meta:
+  name: proj
+delivery:
+  packaging: FILE
+files:
+  proj: .proj.project.yml

@@ -7,10 +7,10 @@ use warnings;
 
 use feature qw/say/;
 
-use Archive::Zip;
-use Compress::Bzip2;
-use File::Temp;
+use Archive::Zip qw/:ERRORS :CONSTANTS/;
 use Carp qw/croak/;
+use File::Spec::Functions qw/catfile/;
+use File::Copy;
 
 our $VERSION = '0.001000';
 
@@ -20,35 +20,85 @@ sub new {
   bless {}, $class;
 }
 
-# ensure that file is packaged
-# TODO return boolean
-sub validate {
-  my ($self, $method, $package) = @_;
-}
-
-# call appropriate sub from library to create a package
-# TODO return name of packaged file
 sub package {
   my ($self, $method, $package_name, $files) = @_;
 
+  croak "no files to package" unless @$files;
+
+  my $result;
   if ($method eq 'FILE') {
-    # create a dir
+    mkdir $package_name;
+    $result = $package_name;
   }
   elsif ($method eq 'ZIP') {
-    # create zip archive
-  }
-  elsif ($method eq 'BZIP2') {
-    # create bzip archive 
+    my $zip    = Archive::Zip->new();
+    foreach (@$files) {
+      $zip->addFile($_) if -f $_;
+
+      $zip->addDirectory($_) if -d $_;
+    }
+
+    $result = $package_name . '.zip';
+
+    $zip->writeToFileNamed($result);
   }
   else {
     croak "unknown packaging method $method";
   }
+
+  return $result;
 }
 
-# reverse package sub
-# TODO return array of file names representing extracted files
 sub unpackage {
-  my ($self, $method, $package_name, $files) = @_;
+  my ($self, $method, $package_name, $dest, $files) = @_;
+
+  croak "no files to unpackage" unless @$files;
+
+  my $result = [];
+  if ($method eq 'FILE') {
+    # 1. verify package is dir
+    unless (-d $package_name) {
+      croak "package type does not match packaging method";
+    }
+
+    # 2. find files in dir
+    foreach (@$files) {
+      croak "$_ is not a file in $package_name"
+        unless -e catfile($package_name, $_);
+    }
+
+    # 3. copy files from dir
+    foreach (@$files) {
+      copy(catfile($package_name, $_), catfile($dest, $_));
+      push @$result, catfile($dest, $_);
+    }
+  }
+  elsif ($method eq 'ZIP') {
+    # 1. verify package plus .zip is file
+    unless (-f $package_name . '.zip') {
+      croak "package type does not match packaging method";
+    }
+
+    # 2. find files in package
+    my $zip = Archive::Zip->new();
+    $zip->read($package_name . '.zip');
+
+    foreach (@$files) {
+      croak "$_ is not a file in $package_name.zip"
+        unless (defined $zip->memberNamed($_));
+    }
+
+    # 3. extract files
+    foreach (@$files) {
+      $zip->extractMember($_, catfile($dest, $_));
+      push @$result, catfile($dest, $_);
+    }
+  }
+  else {
+    croak "unknown packaging method: $method";
+  }
+
+  return $result;
 }
 
 1;
@@ -67,15 +117,11 @@ __END__
 
 create simple packager object
 
-=item * validate ($self, $method, $package_name)
-
-ensure files are packaged as specified
-
-=item * package ($self, $package_name, $files_array)
+=item * package ($self, $packaging, $package_name, $files_array)
 
 package files using specified packaging
 
-=item * package ($self, $package_name, $files_array)
+=item * unpackage ($self, $packaging, $package_name, $files_array)
 
 unpackage files using specified packaging
 
