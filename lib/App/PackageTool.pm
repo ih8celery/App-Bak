@@ -6,35 +6,24 @@ use strict;
 use warnings;
 
 use File::Spec::Functions qw/catfile/;
-use YAML::XS qw/LoadFile DumpFile/;
+use YAML::XS qw/LoadFile/;
 
-use Project::Package::Manager;
+use Project::Package::Spec;
 
 use Mouse;
-extends qw/CLI::CommandLineApp/;
+extends qw/Dev::CLI::CommandLineApp/;
 
-has 'package'    => { is => 'bare', isa => 'Project::Package' };
-has 'delivery'   => { is => 'bare', isa => 'Project::Delivery' };
 has 'properties' => { is => 'rw', isa => 'HashRef' };
 
 override 'execute', sub {
   my ($self) = @_;
 
-  my $context = {
-    'config' => ($ENV{BAK_CONFIG} || catfile($ENV{HOME}, '.bak_config.yml')),
-  };
+  $self->configfile($ENV{BAK_CONFIG} || catfile($ENV{HOME}, '.bak_config.yml'));
 
   my $info = $self->get_args(
     {
-      description => {
-        name    => 'PackageTool',
-        summary => 'create archives and distribute files based on yaml files'
-      },
-      commands    => {
-        up   => 'transfer files into an archive',
-        down => 'transfer files out of an archive'
-      },
-      options     => {
+      commands => 'up|down',
+      options  => {
         '--help|-h'     => {
           summary => 'print this help message'
         },
@@ -61,24 +50,19 @@ override 'execute', sub {
         }
       }
     },
-    \@ARGS,
-    $context
+    \@ARGS
   );
 
   $self->properties(LoadFile($info->options('config')));
 
-  my $manager = Project::Package::Manager->new(file => $info->options('spec'));
+  my $spec = Project::Package::Spec->new($info->options('spec'));
 
-  my $cmd  = $info->command->name;
-  my $file = '';
+  my $cmd = $info->command->name;
   if ($cmd eq 'up') {
-    $manager->pack;
+    $spec->pack;
   }
   elsif ($cmd eq 'down') {
-    $manager->unpack;
-  }
-  elsif ($cmd eq 'info') {
-    $manager->describe($file);
+    $spec->unpack;
   }
 }
 

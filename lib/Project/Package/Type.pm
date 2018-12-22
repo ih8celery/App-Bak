@@ -2,6 +2,22 @@
 
 package Project::Package::Type;
 
-use Mouse::Role;
-with qw/Project::Utils::Describable/;
-requires qw/match pack unpack/;
+use strict;
+use warnings;
+
+use Mouse;
+
+has 'name'    => { is => 'rw', isa => 'Str' };
+has 'summary' => { is => 'rw', isa => 'Str' };
+
+sub match {
+  confess 'match method not implemented';
+}
+
+sub pack {
+  confess 'pack method not implemented';
+}
+
+sub unpack {
+  confess 'unpack method not implemented';
+}
