@@ -7,7 +7,6 @@ use warnings;
 
 use feature qw/say/;
 
-# imports
 use Carp qw/croak/;
 use Cwd;
 use File::Spec::Functions qw/catfile/;
@@ -16,10 +15,6 @@ use Project::Config;
 
 use File::Copy;
 
-# package variables
-our $VERSION = '0.001000';
-
-# subs
 sub new {
   my ($class, $config, $packager) = @_;
 
@@ -204,47 +199,3 @@ sub store {
 
   $self->transfer('MOVE', $pkg, $archive);
 }
-
-1;
-
-__END__
-
-=head1 Name
-
-  Project::Delivery v0.001000
-
-=head1 Introduction
-
-this modules defines the class of the same name, which is the backend
-used by the command-line interface (in App::Bak::CLI). it encapsulates
-an "archive": a combination of an archive description in YAML called
-the archive spec; and an archive itself. the spec and archive are not
-necessarily tied to one another; rather, the spec models an archive and
-any archive which is associated with the spec will be made to fit the
-spec if possible.
-
-=head1 API
-
-=over 4
-
-=item * new ($class, $config)
-
-construct a new object
-
-=item * store ($self, $info)
-
-use up_method to transfer files into archive
-
-=item * deliver ($self, $info)
-
-use method to transfer files out of archive
-
-=item * transfer ($self, $method, $source, $dest)
-
-=back
-
-=head1 License
-
-Copyright (C) 2018 Adam Marshall.
-
-This software is distributed under the MIT License.
